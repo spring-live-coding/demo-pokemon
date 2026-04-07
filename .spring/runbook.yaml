@@ -1,0 +1,23 @@
+spring: "1.0"
+
+name: Project Setup
+description: Auto-generated setup recipe using npm
+
+prerequisites:
+  - name: Node.js
+    check: node --version
+    required: true
+
+steps:
+  - name: Kill ports if in use
+    run: npx kill-port 3000 5001 || true
+    optional: true
+  - name: Install dependencies
+    run: npm install
+  - name: Start development server
+    run: npm run dev
+    background: true
+    ready_when:
+      type: http
+      url: "http://localhost:3000"
+      timeout: "180s"
