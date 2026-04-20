@@ -1,0 +1,23 @@
+spring: "1.0"
+
+name: Pokemon Demo App
+description: Next.js Pokemon viewer using PokeAPI
+
+prerequisites:
+  - name: Node.js (v18+)
+    check: "node --version | grep -E \"v(18|19|20|21|22|23)\\.\" || (echo \"Node.js v18+ required\" && exit 1)"
+    required: true
+
+steps:
+  - name: Kill port 3000 if in use
+    run: npx kill-port 3000 || true
+    optional: true
+  - name: Install dependencies
+    run: npm install
+  - name: Start development server
+    run: npm run dev
+    background: true
+    ready_when:
+      type: http
+      url: "http://localhost:3000"
+      timeout: "180s"
