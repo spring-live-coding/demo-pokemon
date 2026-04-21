@@ -1,0 +1,29 @@
+spring: "1.0"
+
+name: Project Setup
+description: Auto-generated setup recipe using npm
+
+container:
+  image: "node:22-slim"
+  ports: [3000]
+  env:
+    HOST: "0.0.0.0"
+
+prerequisites:
+  - name: Container runtime
+    check: docker info || podman info
+    required: true
+
+steps:
+  - name: Kill ports if in use
+    run: npx kill-port 3000 5001 || true
+    optional: true
+  - name: Install dependencies
+    run: npm install
+  - name: Start development server
+    run: npm run dev
+    background: true
+    ready_when:
+      type: http
+      url: "http://localhost:3000"
+      timeout: "180s"
