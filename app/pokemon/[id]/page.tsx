@@ -43,6 +43,27 @@ const typeBackgrounds: Record<string, string> = {
   fairy: "bg-pink-50",
 };
 
+const typeGradientColors: Record<string, string> = {
+  normal: "#e5e7eb",
+  fire: "#fed7aa",
+  water: "#bfdbfe",
+  electric: "#fef08a",
+  grass: "#bbf7d0",
+  ice: "#a5f3fc",
+  fighting: "#fecaca",
+  poison: "#e9d5ff",
+  ground: "#fde68a",
+  flying: "#c7d2fe",
+  psychic: "#fbcfe8",
+  bug: "#d9f99d",
+  rock: "#fde047",
+  ghost: "#ddd6fe",
+  dragon: "#a5b4fc",
+  dark: "#d1d5db",
+  steel: "#e5e7eb",
+  fairy: "#f9a8d4",
+};
+
 interface Pokemon {
   id: number;
   name: string;
@@ -123,7 +144,16 @@ export default async function PokemonPage({ params }: { params: Promise<{ id: st
   );
 
   const primaryType = pokemon.types[0]?.type.name || "normal";
-  const typeBackground = typeBackgrounds[primaryType] || "bg-gray-50";
+  const secondaryType = pokemon.types[1]?.type.name;
+
+  // Create background style for dual-type Pokemon
+  const backgroundStyle = secondaryType
+    ? {
+        background: `linear-gradient(135deg, ${typeGradientColors[primaryType]} 0%, ${typeGradientColors[secondaryType]} 100%)`,
+      }
+    : undefined;
+
+  const typeBackground = !secondaryType ? (typeBackgrounds[primaryType] || "bg-gray-50") : "";
 
   return (
     <div>
@@ -146,7 +176,10 @@ export default async function PokemonPage({ params }: { params: Promise<{ id: st
             />
           </div>
 
-          <div className={`md:w-2/3 p-8 ${typeBackground}`}>
+          <div
+            className={`md:w-2/3 p-8 ${typeBackground}`}
+            style={backgroundStyle}
+          >
             <div className="flex items-baseline gap-3 mb-4">
               <h1 className="text-3xl font-bold capitalize">{pokemon.name}</h1>
               <span className="text-gray-400 text-xl">
