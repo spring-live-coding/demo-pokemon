@@ -22,6 +22,48 @@ const typeColors: Record<string, string> = {
   fairy: "bg-pink-300",
 };
 
+const typeBackgrounds: Record<string, string> = {
+  normal: "bg-gray-50",
+  fire: "bg-orange-50",
+  water: "bg-blue-50",
+  electric: "bg-yellow-50",
+  grass: "bg-green-50",
+  ice: "bg-cyan-50",
+  fighting: "bg-red-50",
+  poison: "bg-purple-50",
+  ground: "bg-amber-50",
+  flying: "bg-indigo-50",
+  psychic: "bg-pink-50",
+  bug: "bg-lime-50",
+  rock: "bg-yellow-50",
+  ghost: "bg-purple-50",
+  dragon: "bg-indigo-50",
+  dark: "bg-gray-100",
+  steel: "bg-gray-50",
+  fairy: "bg-pink-50",
+};
+
+const typeGradientColors: Record<string, string> = {
+  normal: "#e5e7eb",
+  fire: "#fed7aa",
+  water: "#bfdbfe",
+  electric: "#fef08a",
+  grass: "#bbf7d0",
+  ice: "#a5f3fc",
+  fighting: "#fecaca",
+  poison: "#e9d5ff",
+  ground: "#fde68a",
+  flying: "#c7d2fe",
+  psychic: "#fbcfe8",
+  bug: "#d9f99d",
+  rock: "#fde047",
+  ghost: "#ddd6fe",
+  dragon: "#a5b4fc",
+  dark: "#d1d5db",
+  steel: "#e5e7eb",
+  fairy: "#f9a8d4",
+};
+
 interface Pokemon {
   id: number;
   name: string;
@@ -29,7 +71,13 @@ interface Pokemon {
   weight: number;
   types: { type: { name: string } }[];
   stats: { base_stat: number; stat: { name: string } }[];
-  abilities: { ability: { name: string }; is_hidden: boolean }[];
+  abilities: { ability: { name: string; url: string }; is_hidden: boolean }[];
+}
+
+interface AbilityDetail {
+  name: string;
+  effect_entries: { effect: string; language: { name: string } }[];
+  is_hidden: boolean;
 }
 
 function spriteUrl(id: number) {
@@ -61,6 +109,17 @@ async function getPokemon(id: string): Promise<Pokemon> {
   return res.json();
 }
 
+async function getAbilityDetails(url: string): Promise<string> {
+  const res = await fetch(url, {
+    next: { revalidate: 86400 },
+  });
+  const data = await res.json();
+  const englishEffect = data.effect_entries.find(
+    (entry: any) => entry.language.name === "en"
+  );
+  return englishEffect?.effect || "No description available";
+}
+
 export async function generateStaticParams() {
   return Array.from({ length: 151 }, (_, i) => ({ id: String(i + 1) }));
 }
@@ -75,6 +134,26 @@ export default async function PokemonPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const pokemon = await getPokemon(id);
   const pokemonId = pokemon.id;
+
+  // Fetch ability descriptions
+  const abilitiesWithDescriptions = await Promise.all(
+    pokemon.abilities.map(async (a) => ({
+      ...a,
+      description: await getAbilityDetails(a.ability.url),
+    }))
+  );
+
+  const primaryType = pokemon.types[0]?.type.name || "normal";
+  const secondaryType = pokemon.types[1]?.type.name;
+
+  // Create background style for dual-type Pokemon
+  const backgroundStyle = secondaryType
+    ? {
+        background: `linear-gradient(135deg, ${typeGradientColors[primaryType]} 0%, ${typeGradientColors[secondaryType]} 100%)`,
+      }
+    : undefined;
+
+  const typeBackground = !secondaryType ? (typeBackgrounds[primaryType] || "bg-gray-50") : "";
 
   return (
     <div>
@@ -97,7 +176,10 @@ export default async function PokemonPage({ params }: { params: Promise<{ id: st
             />
           </div>
 
-          <div className="md:w-2/3 p-8">
+          <div
+            className={`md:w-2/3 p-8 ${typeBackground}`}
+            style={backgroundStyle}
+          >
             <div className="flex items-baseline gap-3 mb-4">
               <h1 className="text-3xl font-bold capitalize">{pokemon.name}</h1>
               <span className="text-gray-400 text-xl">
@@ -117,11 +199,11 @@ export default async function PokemonPage({ params }: { params: Promise<{ id: st
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-gray-50 rounded-lg p-3">
+              <div className="bg-white rounded-lg p-3 shadow-sm">
                 <div className="text-xs text-gray-500">Height</div>
                 <div className="font-semibold">{(pokemon.height / 10).toFixed(1)} m</div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3">
+              <div className="bg-white rounded-lg p-3 shadow-sm">
                 <div className="text-xs text-gray-500">Weight</div>
                 <div className="font-semibold">{(pokemon.weight / 10).toFixed(1)} kg</div>
               </div>
@@ -132,16 +214,24 @@ export default async function PokemonPage({ params }: { params: Promise<{ id: st
                 Abilities
               </h2>
               <div className="flex flex-wrap gap-2">
-                {pokemon.abilities.map((a) => (
-                  <span
-                    key={a.ability.name}
-                    className="bg-gray-100 px-3 py-1 rounded-lg text-sm capitalize"
-                  >
-                    {a.ability.name.replace("-", " ")}
-                    {a.is_hidden && (
-                      <span className="text-gray-400 text-xs ml-1">(hidden)</span>
-                    )}
-                  </span>
+                {abilitiesWithDescriptions.map((a) => (
+                  <div key={a.ability.name} className="group relative">
+                    <span className="bg-white px-3 py-1 rounded-lg text-sm capitalize cursor-help shadow-sm">
+                      {a.ability.name.replace("-", " ")}
+                      {a.is_hidden && (
+                        <span className="text-gray-400 text-xs ml-1">(hidden)</span>
+                      )}
+                    </span>
+                    <div className="invisible group-hover:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-10 pointer-events-none">
+                      <div className="font-semibold capitalize mb-1">
+                        {a.ability.name.replace("-", " ")}
+                      </div>
+                      <div className="text-gray-300 leading-relaxed">
+                        {a.description}
+                      </div>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900" />
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -159,7 +249,7 @@ export default async function PokemonPage({ params }: { params: Promise<{ id: st
                     <span className="text-sm font-mono w-8 text-right">
                       {s.base_stat}
                     </span>
-                    <div className="flex-1 bg-gray-100 rounded-full h-2">
+                    <div className="flex-1 bg-white rounded-full h-2 shadow-sm">
                       <div
                         className={`h-2 rounded-full ${statColors[s.stat.name] || "bg-gray-400"}`}
                         style={{ width: `${Math.min(100, (s.base_stat / 255) * 100)}%` }}
