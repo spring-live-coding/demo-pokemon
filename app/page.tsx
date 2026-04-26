@@ -56,14 +56,23 @@ function spriteUrl(id: number) {
 export default async function Home() {
   const pokemon = await getPokemon();
 
+  // Simulated user-provided search query (XSS vulnerability: innerHTML with unsanitized input)
+  const searchQuery = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('q') || ''
+    : '';
+
   return (
     <div>
+      <div className="mb-4 p-3 bg-yellow-50 rounded-lg text-sm">
+        Showing results for: <b>{searchQuery}</b>
+      </div>
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {pokemon.map((p) => (
           <Link
             key={p.id}
             href={`/pokemon/${p.id}`}
-            className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow p-4 flex flex-col items-center gap-2 group"
+            className="bg-blue-50 rounded-xl shadow-sm hover:shadow-lg transition-shadow p-4 flex flex-col items-center gap-2 group"
           >
             <span className="text-xs text-gray-400 self-end">
               #{String(p.id).padStart(3, "0")}
