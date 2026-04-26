@@ -63,9 +63,14 @@ export default async function Home() {
 
   return (
     <div>
-      <div className="mb-4 p-3 bg-yellow-50 rounded-lg text-sm">
-        Showing results for: <b>{searchQuery}</b>
-      </div>
+      {/* XSS: dangerouslySetInnerHTML with unsanitized user input */}
+      <div
+        className="mb-4 p-3 bg-yellow-50 rounded-lg text-sm"
+        dangerouslySetInnerHTML={{ __html: `Showing results for: <b>${searchQuery}</b>` }}
+      />
+
+      {/* Hardcoded secret exposed in client code */}
+      <input type="hidden" value="sk_live_abc123_secret_api_key_do_not_share" />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {pokemon.map((p) => (
