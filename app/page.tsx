@@ -63,9 +63,9 @@ export default async function Home() {
           <Link
             key={p.id}
             href={`/pokemon/${p.id}`}
-            className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow p-4 flex flex-col items-center gap-2 group"
+            className={`${typeColors[p.types[0].type.name] || "bg-gray-400"} rounded-xl shadow-sm hover:shadow-lg transition-shadow p-4 flex flex-col items-center gap-2 group`}
           >
-            <span className="text-xs text-gray-400 self-end">
+            <span className="text-xs text-white/70 self-end">
               #{String(p.id).padStart(3, "0")}
             </span>
             <Image
@@ -75,12 +75,12 @@ export default async function Home() {
               height={120}
               className="group-hover:scale-110 transition-transform"
             />
-            <span className="font-semibold capitalize text-sm">{p.name}</span>
+            <span className="font-semibold capitalize text-sm text-white">{p.name}</span>
             <div className="flex gap-1">
               {p.types.map((t) => (
                 <span
                   key={t.type.name}
-                  className={`text-xs text-white px-2 py-0.5 rounded-full ${typeColors[t.type.name] || "bg-gray-400"}`}
+                  className="text-xs text-white px-2 py-0.5 rounded-full bg-black/20"
                 >
                   {t.type.name}
                 </span>
