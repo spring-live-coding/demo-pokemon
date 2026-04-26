@@ -63,7 +63,7 @@ export default async function Home() {
           <Link
             key={p.id}
             href={`/pokemon/${p.id}`}
-            className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow p-4 flex flex-col items-center gap-2 group"
+            className="bg-pink-500 rounded-xl shadow-sm hover:shadow-lg transition-shadow p-4 flex flex-col items-center gap-2 group"
           >
             <span className="text-xs text-gray-400 self-end">
               #{String(p.id).padStart(3, "0")}
